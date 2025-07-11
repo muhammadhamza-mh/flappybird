@@ -1,19 +1,21 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-
+const bgAudio = new Audio("background.mp3");
+const jumpSound = new Audio("flap.mp3");
+jumpSound.volume = 0.6;
 const startScreen = document.getElementById("overlay");
 const gameOverScreen = document.getElementById("gameOverScreen");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const scoreDisplay = document.getElementById("score");
 const finalScore = document.getElementById("finalScore");
+const gameOverSound = new Audio("gameover.mp3");
+gameOverSound.volume = 0.6;
+
 
 const birdImg = new Image();
 birdImg.src = "https://i.ibb.co/p6rtypTB/bird.png";
 
-const bgAudio = new Audio("https://cdn.pixabay.com/download/audio/2023/06/13/audio_d2529b13d5.mp3?filename=playful-run-146661.mp3");
-bgAudio.loop = true;
-bgAudio.volume = 0.2;
 
 let bird = {
   x: 100,
@@ -64,8 +66,11 @@ function resetGame() {
     bottom: top + pipeGap,
     scored: false
   });
+bgAudio.currentTime = 0;
+bgAudio.loop = true;
+bgAudio.volume = 0.2;
+bgAudio.play();
 
-  bgAudio.play();
 }
 
 function getPipeSpacing() {
@@ -268,7 +273,18 @@ function gameLoop() {
 function flap() {
   if (!isGameRunning || gameOver) return;
   velocity = flapPower;
+
+  // Play only first 0.8s of flap.mp3
+  jumpSound.pause();
+  jumpSound.currentTime = 0;
+  jumpSound.play();
+
+  setTimeout(() => {
+    jumpSound.pause();
+    jumpSound.currentTime = 0;
+  }, 800);
 }
+
 
 function startGame() {
   resetGame();
@@ -276,21 +292,29 @@ function startGame() {
   startScreen.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
 }
-
 function endGame() {
   gameOver = true;
   isGameRunning = false;
 
+  // Update high score if needed
   if (score > highScore) {
     highScore = score;
     localStorage.setItem("highScore", highScore);
   }
 
-  finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
-  gameOverScreen.classList.remove("hidden");
+  // Stop background music
   bgAudio.pause();
   bgAudio.currentTime = 0;
+
+  // Play game over sound
+  gameOverSound.currentTime = 0;
+  gameOverSound.play();
+
+  // Show final score
+  finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
+  gameOverScreen.classList.remove("hidden");
 }
+
 
 window.addEventListener("keydown", e => {
   if (["Space", "ArrowUp"].includes(e.code)) e.preventDefault();
