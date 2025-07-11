@@ -44,7 +44,6 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-
 function resetGame() {
   bird.y = canvas.height / 2;
   velocity = 0;
@@ -55,9 +54,21 @@ function resetGame() {
   level = "Easy";
   speed = 3;
   lastPipeX = canvas.width;
-  spawnPipe();
+
+  // 🟢 First pipe appears directly ahead (not distant)
+  const top = Math.random() * (canvas.height / 2) + 50;
+  pipes.push({
+    x: bird.x + 200, // Very close to bird
+    top,
+    bottom: top + pipeGap,
+    scored: false
+  });
+
+  // 🧠 Setup for next pipes to space out normally
+  lastPipeX = bird.x + 200;
   bgAudio.play();
 }
+
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
 
@@ -252,29 +263,10 @@ function flap() {
 }
 
 function startGame() {
-  function resetGame() {
-  bird.y = canvas.height / 2;
-  velocity = 0;
-  pipes = [];
-  score = 0;
-  gameOver = false;
-  scoreDisplay.textContent = "Score: 0";
-  level = "Easy";
-  speed = 3;
-  lastPipeX = canvas.width;
-
-  // 🟢 First pipe appears directly ahead (not distant)
-  const top = Math.random() * (canvas.height / 2) + 50;
-  pipes.push({
-    x: bird.x + 200, // Very close to bird
-    top,
-    bottom: top + pipeGap,
-    scored: false
-  });
-
-  // 🧠 Setup for next pipes to space out normally
-  lastPipeX = bird.x + 200;
-  bgAudio.play();
+  resetGame();
+  isGameRunning = true;
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
 }
 
 function endGame() {
@@ -301,4 +293,4 @@ canvas.addEventListener("click", flap);
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
 
-gameLoop();}
+gameLoop();
