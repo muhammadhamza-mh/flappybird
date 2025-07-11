@@ -25,7 +25,7 @@ let bird = {
 
 let velocity = 0;
 const gravity = 0.9;
-const flapPower = -14;
+const flapPower = -16;
 
 let pipeGap = 180;
 const pipeWidth = 60;
