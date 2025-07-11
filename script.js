@@ -1,7 +1,5 @@
-let highScore = localStorage.getItem("highScore") || 0;
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-scoreDisplay.textContent = `Score: ${score} | Level: ${level} | High: ${highScore}`;
 
 const startScreen = document.getElementById("overlay");
 const gameOverScreen = document.getElementById("gameOverScreen");
@@ -27,13 +25,14 @@ let bird = {
 
 let velocity = 0;
 const gravity = 0.9;
-const flapPower = -10;
+const flapPower = -14;
 
 let pipeGap = 180;
 const pipeWidth = 60;
 let pipes = [];
 
 let score = 0;
+let highScore = localStorage.getItem("highScore") || 0;
 let isGameRunning = false;
 let gameOver = false;
 let level = "Easy";
@@ -52,11 +51,12 @@ function resetGame() {
   pipes = [];
   score = 0;
   gameOver = false;
-  scoreDisplay.textContent = "Score: 0";
   level = "Easy";
   speed = 3;
 
-  // Spawn first pipe directly near bird
+  scoreDisplay.textContent = `Score: 0 | Level: ${level} | High: ${highScore}`;
+
+  // Spawn first pipe close
   const top = Math.random() * (canvas.height / 2) + 50;
   pipes.push({
     x: bird.x + 200,
@@ -91,11 +91,11 @@ function spawnPipe() {
 }
 
 function updateLevel() {
-  if (score >= 20) {
+  if (score >= 4) {
     level = "Hard";
     speed = 6;
     pipeGap = 140;
-  } else if (score >= 10) {
+  } else if (score >= 2) {
     level = "Normal";
     speed = 4.5;
     pipeGap = 160;
@@ -117,37 +117,35 @@ function update() {
   pipes.forEach(pipe => {
     pipe.x -= speed;
 
+    // ✅ Accurate collision check using bounding box
     const birdLeft = bird.x - bird.width / 2 + 5;
-const birdRight = bird.x + bird.width / 2 - 5;
-const birdTop = bird.y - bird.height / 2 + 5;
-const birdBottom = bird.y + bird.height / 2 - 5;
+    const birdRight = bird.x + bird.width / 2 - 5;
+    const birdTop = bird.y - bird.height / 2 + 5;
+    const birdBottom = bird.y + bird.height / 2 - 5;
 
-const pipeLeft = pipe.x;
-const pipeRight = pipe.x + pipeWidth;
+    const pipeLeft = pipe.x;
+    const pipeRight = pipe.x + pipeWidth;
 
-const topPipeBottom = pipe.top;
-const bottomPipeTop = pipe.bottom;
+    const topPipeBottom = pipe.top;
+    const bottomPipeTop = pipe.bottom;
 
-if (
-  birdRight > pipeLeft &&
-  birdLeft < pipeRight &&
-  (birdTop < topPipeBottom || birdBottom > bottomPipeTop)
-) {
-  endGame();
-}
-
-
+    if (
+      birdRight > pipeLeft &&
+      birdLeft < pipeRight &&
+      (birdTop < topPipeBottom || birdBottom > bottomPipeTop)
+    ) {
+      endGame();
+    }
 
     if (!pipe.scored && pipe.x + pipeWidth < bird.x) {
       pipe.scored = true;
       score++;
-      scoreDisplay.textContent = `Score: ${score} | Level: ${level}`;
+      scoreDisplay.textContent = `Score: ${score} | Level: ${level} | High: ${highScore}`;
     }
   });
 
   pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
 
-  // Always keep consistent spacing
   const lastPipe = pipes[pipes.length - 1];
   if (!lastPipe || (canvas.width - lastPipe.x) >= getPipeSpacing()) {
     spawnPipe();
@@ -252,13 +250,12 @@ function draw() {
   ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
   ctx.restore();
 
-  // Pipes
+  // Draw pipes
   pipes.forEach(pipe => {
     drawPipe(pipe.x, 0, pipe.top);
     drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
   });
 
-  // Foreground grass
   drawForeground();
 }
 
@@ -281,15 +278,15 @@ function startGame() {
 }
 
 function endGame() {
-  if (score > highScore) {
-  highScore = score;
-  localStorage.setItem("highScore", highScore);
-}
-finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
-
   gameOver = true;
   isGameRunning = false;
-  finalScore.textContent = `Your Score: ${score}`;
+
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("highScore", highScore);
+  }
+
+  finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
   gameOverScreen.classList.remove("hidden");
   bgAudio.pause();
   bgAudio.currentTime = 0;
