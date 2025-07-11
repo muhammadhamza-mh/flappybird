@@ -61,14 +61,13 @@ function resetGame() {
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
 
-  // 🧠 Dynamic spacing based on level
   let pipeSpacing;
   if (level === "Hard") {
-    pipeSpacing = 180; // closest
+    pipeSpacing = 160; // even tighter
   } else if (level === "Normal") {
-    pipeSpacing = 220;
+    pipeSpacing = 200;
   } else {
-    pipeSpacing = 250; // Easy
+    pipeSpacing = 230;
   }
 
   pipes.push({
@@ -80,6 +79,7 @@ function spawnPipe() {
 
   lastPipeX += pipeSpacing;
 }
+
 
 
 function updateLevel() {
@@ -252,10 +252,29 @@ function flap() {
 }
 
 function startGame() {
-  resetGame();
-  isGameRunning = true;
-  startScreen.classList.add("hidden");
-  gameOverScreen.classList.add("hidden");
+  function resetGame() {
+  bird.y = canvas.height / 2;
+  velocity = 0;
+  pipes = [];
+  score = 0;
+  gameOver = false;
+  scoreDisplay.textContent = "Score: 0";
+  level = "Easy";
+  speed = 3;
+  lastPipeX = canvas.width;
+
+  // 🟢 First pipe appears directly ahead (not distant)
+  const top = Math.random() * (canvas.height / 2) + 50;
+  pipes.push({
+    x: bird.x + 200, // Very close to bird
+    top,
+    bottom: top + pipeGap,
+    scored: false
+  });
+
+  // 🧠 Setup for next pipes to space out normally
+  lastPipeX = bird.x + 200;
+  bgAudio.play();
 }
 
 function endGame() {
@@ -282,4 +301,4 @@ canvas.addEventListener("click", flap);
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
 
-gameLoop();
+gameLoop();}
