@@ -24,8 +24,8 @@ let bird = {
 };
 
 let velocity = 0;
-const gravity = 0.4;              // ⬆ Faster falling
-const flapPower = -7.5;            // ⬆ Stronger flap
+const gravity = 0.9;
+const flapPower = -14;
 
 let pipeGap = 180;
 const pipeWidth = 60;
@@ -36,7 +36,6 @@ let isGameRunning = false;
 let gameOver = false;
 let level = "Easy";
 let speed = 3;
-let lastPipeX = 0;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -44,6 +43,7 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
 function resetGame() {
   bird.y = canvas.height / 2;
   velocity = 0;
@@ -53,45 +53,40 @@ function resetGame() {
   scoreDisplay.textContent = "Score: 0";
   level = "Easy";
   speed = 3;
-  lastPipeX = canvas.width;
 
-  // 🟢 First pipe appears directly ahead (not distant)
+  // Spawn first pipe directly near bird
   const top = Math.random() * (canvas.height / 2) + 50;
   pipes.push({
-    x: bird.x + 200, // Very close to bird
+    x: bird.x + 200,
     top,
     bottom: top + pipeGap,
     scored: false
   });
 
-  // 🧠 Setup for next pipes to space out normally
-  lastPipeX = bird.x + 200;
   bgAudio.play();
+}
+
+function getPipeSpacing() {
+  if (level === "Hard") return 160;
+  if (level === "Normal") return 200;
+  return 230;
 }
 
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
+  const pipeSpacing = getPipeSpacing();
 
-  let pipeSpacing;
-  if (level === "Hard") {
-    pipeSpacing = 160; // even tighter
-  } else if (level === "Normal") {
-    pipeSpacing = 200;
-  } else {
-    pipeSpacing = 230;
-  }
+  const x = pipes.length
+    ? pipes[pipes.length - 1].x + pipeSpacing
+    : bird.x + 200;
 
   pipes.push({
-    x: lastPipeX + pipeSpacing,
+    x,
     top,
     bottom: top + pipeGap,
     scored: false
   });
-
-  lastPipeX += pipeSpacing;
 }
-
-
 
 function updateLevel() {
   if (score >= 20) {
@@ -137,7 +132,9 @@ function update() {
 
   pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
 
-  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 120) {
+  // Always keep consistent spacing
+  const lastPipe = pipes[pipes.length - 1];
+  if (!lastPipe || (canvas.width - lastPipe.x) >= getPipeSpacing()) {
     spawnPipe();
   }
 
@@ -145,24 +142,24 @@ function update() {
     endGame();
   }
 }
+
 function drawPipe(x, y, height) {
   const gradient = ctx.createLinearGradient(x, y, x + pipeWidth, y + height);
-  gradient.addColorStop(0, "#4ade80"); // green
-  gradient.addColorStop(1, "#16a34a"); // darker green
+  gradient.addColorStop(0, "#4ade80");
+  gradient.addColorStop(1, "#16a34a");
 
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(x, y, pipeWidth, height, 15);
   ctx.fillStyle = gradient;
-  ctx.fill();
   ctx.shadowColor = "#22c55e";
   ctx.shadowBlur = 12;
+  ctx.fill();
   ctx.strokeStyle = "#15803d";
   ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();
 }
-
 
 CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
   r = Math.min(r, w / 2, h / 2);
@@ -174,40 +171,8 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
   this.arcTo(x, y, x + w, y, r);
   this.closePath();
 };
-function draw() {
-  // Background gradient per level
-  let bg;
-  if (level === "Easy") {
-    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bg.addColorStop(0, "#87ceeb"); // sky blue
-    bg.addColorStop(1, "#ffffff"); // white
-  } else if (level === "Normal") {
-    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bg.addColorStop(0, "#fdba74"); // light orange
-    bg.addColorStop(1, "#fef3c7"); // cream
-  } else {
-    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bg.addColorStop(0, "#0f172a"); // dark navy
-    bg.addColorStop(1, "#1e293b"); // dark blue gray
-  }
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // ☁️ Clouds only in Easy mode
-  if (level === "Easy") {
-    for (let i = 0; i < 6; i++) {
-      const x = (i * 300 + (Date.now() / 40)) % (canvas.width + 200) - 100;
-      const y = 60 + Math.sin(i + Date.now() / 1000) * 10;
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.beginPath();
-      ctx.arc(x, y, 30, 0, Math.PI * 2);
-      ctx.arc(x + 40, y + 10, 25, 0, Math.PI * 2);
-      ctx.arc(x - 40, y + 10, 20, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
 function drawForeground() {
-  // 🌿 Grassy hills only (clean, no rocks or gray blocks)
   const t = Date.now();
   const hillOffset = (t / 30) % canvas.width;
 
@@ -231,9 +196,40 @@ function drawForeground() {
   ctx.restore();
 }
 
+function draw() {
+  // Dynamic background per level
+  let bg;
+  if (level === "Easy") {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#87ceeb");
+    bg.addColorStop(1, "#ffffff");
+  } else if (level === "Normal") {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#fdba74");
+    bg.addColorStop(1, "#fef3c7");
+  } else {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#0f172a");
+    bg.addColorStop(1, "#1e293b");
+  }
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Clouds (only in Easy mode)
+  if (level === "Easy") {
+    for (let i = 0; i < 6; i++) {
+      const x = (i * 300 + (Date.now() / 40)) % (canvas.width + 200) - 100;
+      const y = 60 + Math.sin(i + Date.now() / 1000) * 10;
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.beginPath();
+      ctx.arc(x, y, 30, 0, Math.PI * 2);
+      ctx.arc(x + 40, y + 10, 25, 0, Math.PI * 2);
+      ctx.arc(x - 40, y + 10, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 
-  // 🐦 Bird
+  // Draw bird
   const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
   ctx.save();
   ctx.translate(bird.x, bird.y);
@@ -241,15 +237,15 @@ function drawForeground() {
   ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
   ctx.restore();
 
-  // 🧱 Pipes
+  // Pipes
   pipes.forEach(pipe => {
     drawPipe(pipe.x, 0, pipe.top);
     drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
   });
-    drawForeground();
 
+  // Foreground grass
+  drawForeground();
 }
-
 
 function gameLoop() {
   update();
