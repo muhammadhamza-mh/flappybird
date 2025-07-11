@@ -58,13 +58,29 @@ function resetGame() {
   spawnPipe();
   bgAudio.play();
 }
-
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
-  // 🔥 VERY close pipes (tight spacing)
-  pipes.push({ x: lastPipeX + 120, top, bottom: top + pipeGap, scored: false });
-  lastPipeX += 120;
+
+  // 🧠 Dynamic spacing based on level
+  let pipeSpacing;
+  if (level === "Hard") {
+    pipeSpacing = 180; // closest
+  } else if (level === "Normal") {
+    pipeSpacing = 220;
+  } else {
+    pipeSpacing = 250; // Easy
+  }
+
+  pipes.push({
+    x: lastPipeX + pipeSpacing,
+    top,
+    bottom: top + pipeGap,
+    scored: false
+  });
+
+  lastPipeX += pipeSpacing;
 }
+
 
 function updateLevel() {
   if (score >= 20) {
@@ -179,19 +195,9 @@ function draw() {
       ctx.fill();
     }
   }
-
- function drawForeground() {
+function drawForeground() {
+  // 🌿 Grassy hills only (clean, no rocks or gray blocks)
   const t = Date.now();
-
-  // 🏙 Background skyline (slower parallax)
-  const offsetSky = (t / 60) % canvas.width;
-  ctx.fillStyle = "rgba(17, 24, 39, 0.3)";
-  for (let i = 0; i < canvas.width + 200; i += 80) {
-    const height = 60 + (i % 100);
-    ctx.fillRect(i - offsetSky, canvas.height - 140, 60, height);
-  }
-
-  // 🌿 Grassy hills with bezier curve (foreground)
   const hillOffset = (t / 30) % canvas.width;
 
   ctx.save();
@@ -213,6 +219,7 @@ function draw() {
   ctx.fill();
   ctx.restore();
 }
+
 
 
   // 🐦 Bird
