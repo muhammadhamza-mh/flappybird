@@ -1,5 +1,7 @@
+let highScore = localStorage.getItem("highScore") || 0;
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+scoreDisplay.textContent = `Score: ${score} | Level: ${level} | High: ${highScore}`;
 
 const startScreen = document.getElementById("overlay");
 const gameOverScreen = document.getElementById("gameOverScreen");
@@ -25,7 +27,7 @@ let bird = {
 
 let velocity = 0;
 const gravity = 0.9;
-const flapPower = -12;
+const flapPower = -10;
 
 let pipeGap = 180;
 const pipeWidth = 60;
@@ -115,13 +117,26 @@ function update() {
   pipes.forEach(pipe => {
     pipe.x -= speed;
 
-    if (
-      bird.x + bird.radius > pipe.x &&
-      bird.x - bird.radius < pipe.x + pipeWidth &&
-      (bird.y - bird.radius < pipe.top || bird.y + bird.radius > pipe.bottom)
-    ) {
-      endGame();
-    }
+    const birdLeft = bird.x - bird.width / 2 + 5;
+const birdRight = bird.x + bird.width / 2 - 5;
+const birdTop = bird.y - bird.height / 2 + 5;
+const birdBottom = bird.y + bird.height / 2 - 5;
+
+const pipeLeft = pipe.x;
+const pipeRight = pipe.x + pipeWidth;
+
+const topPipeBottom = pipe.top;
+const bottomPipeTop = pipe.bottom;
+
+if (
+  birdRight > pipeLeft &&
+  birdLeft < pipeRight &&
+  (birdTop < topPipeBottom || birdBottom > bottomPipeTop)
+) {
+  endGame();
+}
+
+
 
     if (!pipe.scored && pipe.x + pipeWidth < bird.x) {
       pipe.scored = true;
@@ -266,6 +281,12 @@ function startGame() {
 }
 
 function endGame() {
+  if (score > highScore) {
+  highScore = score;
+  localStorage.setItem("highScore", highScore);
+}
+finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
+
   gameOver = true;
   isGameRunning = false;
   finalScore.textContent = `Your Score: ${score}`;
