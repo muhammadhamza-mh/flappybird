@@ -24,9 +24,8 @@ let bird = {
 };
 
 let velocity = 0;
-const gravity = 0.65; 
-
-const flapPower = -10;
+const gravity = 0.9;              // ⬆ Faster falling
+const flapPower = -14;            // ⬆ Stronger flap
 
 let pipeGap = 180;
 const pipeWidth = 60;
@@ -62,9 +61,9 @@ function resetGame() {
 
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
-  pipes.push({ x: lastPipeX + 40, top, bottom: top + pipeGap, scored: false });
-lastPipeX += 40;
-
+  // 🔥 VERY close pipes (tight spacing)
+  pipes.push({ x: lastPipeX + 120, top, bottom: top + pipeGap, scored: false });
+  lastPipeX += 120;
 }
 
 function updateLevel() {
@@ -111,7 +110,7 @@ function update() {
 
   pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
 
-  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 300) {
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 120) {
     spawnPipe();
   }
 
@@ -152,8 +151,8 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-const angle = Math.min(Math.max(velocity * 0.04, -0.4), 0.4);
 
+  const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
   ctx.save();
   ctx.translate(bird.x, bird.y);
   ctx.rotate(angle);
