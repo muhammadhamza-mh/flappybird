@@ -62,7 +62,7 @@ function resetGame() {
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
   pipes.push({ x: lastPipeX + 300, top, bottom: top + pipeGap, scored: false });
-  lastPipeX += 300;
+  lastPipeX += 200;
 }
 
 function updateLevel() {
