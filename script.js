@@ -118,25 +118,24 @@ function update() {
     endGame();
   }
 }
-
 function drawPipe(x, y, height) {
+  const gradient = ctx.createLinearGradient(x, y, x + pipeWidth, y + height);
+  gradient.addColorStop(0, "#4ade80"); // green
+  gradient.addColorStop(1, "#16a34a"); // darker green
+
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x, y, pipeWidth, height, 10);
-  ctx.fillStyle = "#22c55e";
+  ctx.roundRect(x, y, pipeWidth, height, 15);
+  ctx.fillStyle = gradient;
   ctx.fill();
-  ctx.strokeStyle = "#ec4899";
-  ctx.lineWidth = 5;
-
-  for (let i = 0; i < height; i += 20) {
-    ctx.beginPath();
-    ctx.moveTo(x, y + i);
-    ctx.lineTo(x + pipeWidth, y + i + 10);
-    ctx.stroke();
-  }
-
+  ctx.shadowColor = "#22c55e";
+  ctx.shadowBlur = 12;
+  ctx.strokeStyle = "#15803d";
+  ctx.lineWidth = 3;
+  ctx.stroke();
   ctx.restore();
 }
+
 
 CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
   r = Math.min(r, w / 2, h / 2);
@@ -148,10 +147,27 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
   this.arcTo(x, y, x + w, y, r);
   this.closePath();
 };
-
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // 🌤 Sky gradient
+  let sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  sky.addColorStop(0, "#87ceeb");
+  sky.addColorStop(1, "#ffffff");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  // ☁️ Simple clouds
+  for (let i = 0; i < 6; i++) {
+    const x = (i * 300 + (Date.now() / 40)) % (canvas.width + 200) - 100;
+    const y = 60 + Math.sin(i + Date.now() / 1000) * 10;
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.beginPath();
+    ctx.arc(x, y, 30, 0, Math.PI * 2);
+    ctx.arc(x + 40, y + 10, 25, 0, Math.PI * 2);
+    ctx.arc(x - 40, y + 10, 20, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 🐦 Bird
   const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
   ctx.save();
   ctx.translate(bird.x, bird.y);
@@ -159,11 +175,13 @@ function draw() {
   ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
   ctx.restore();
 
+  // 🧱 Pipes
   pipes.forEach(pipe => {
     drawPipe(pipe.x, 0, pipe.top);
     drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
   });
 }
+
 
 function gameLoop() {
   update();
