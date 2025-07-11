@@ -148,22 +148,51 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
   this.closePath();
 };
 function draw() {
-  // 🌤 Sky gradient
-  let sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  sky.addColorStop(0, "#87ceeb");
-  sky.addColorStop(1, "#ffffff");
-  ctx.fillStyle = sky;
+  // Background gradient per level
+  let bg;
+  if (level === "Easy") {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#87ceeb"); // sky blue
+    bg.addColorStop(1, "#ffffff"); // white
+  } else if (level === "Normal") {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#fdba74"); // light orange
+    bg.addColorStop(1, "#fef3c7"); // cream
+  } else {
+    bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#0f172a"); // dark navy
+    bg.addColorStop(1, "#1e293b"); // dark blue gray
+  }
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // ☁️ Simple clouds
-  for (let i = 0; i < 6; i++) {
-    const x = (i * 300 + (Date.now() / 40)) % (canvas.width + 200) - 100;
-    const y = 60 + Math.sin(i + Date.now() / 1000) * 10;
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
+  // ☁️ Clouds only in Easy mode
+  if (level === "Easy") {
+    for (let i = 0; i < 6; i++) {
+      const x = (i * 300 + (Date.now() / 40)) % (canvas.width + 200) - 100;
+      const y = 60 + Math.sin(i + Date.now() / 1000) * 10;
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.beginPath();
+      ctx.arc(x, y, 30, 0, Math.PI * 2);
+      ctx.arc(x + 40, y + 10, 25, 0, Math.PI * 2);
+      ctx.arc(x - 40, y + 10, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 🏙 City skyline (foreground layer 1)
+  ctx.fillStyle = "rgba(30, 41, 59, 0.5)";
+  for (let i = 0; i < canvas.width; i += 100) {
+    let offset = (Date.now() / 30) % canvas.width;
+    ctx.fillRect(i - offset, canvas.height - 100, 60, 100 - (i % 40));
+  }
+
+  // 🌿 Moving grass (foreground layer 2)
+  ctx.fillStyle = "#10b981";
+  for (let i = 0; i < canvas.width; i += 40) {
+    let offset = (Date.now() / 20) % canvas.width;
     ctx.beginPath();
-    ctx.arc(x, y, 30, 0, Math.PI * 2);
-    ctx.arc(x + 40, y + 10, 25, 0, Math.PI * 2);
-    ctx.arc(x - 40, y + 10, 20, 0, Math.PI * 2);
+    ctx.arc(i - offset, canvas.height - 10, 20, Math.PI, 0);
     ctx.fill();
   }
 
