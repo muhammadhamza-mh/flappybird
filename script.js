@@ -62,8 +62,8 @@ function resetGame() {
 
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
-  pipes.push({ x: lastPipeX + 180, top, bottom: top + pipeGap, scored: false });
-lastPipeX += 180;
+  pipes.push({ x: lastPipeX + 100, top, bottom: top + pipeGap, scored: false });
+lastPipeX += 100;
 
 }
 
@@ -152,8 +152,8 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+const angle = Math.min(Math.max(velocity * 0.04, -0.4), 0.4);
 
-  const angle = Math.min(Math.max(velocity * 0.05, -0.5), 0.5);
   ctx.save();
   ctx.translate(bird.x, bird.y);
   ctx.rotate(angle);
