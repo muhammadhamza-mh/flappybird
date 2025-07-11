@@ -180,21 +180,40 @@ function draw() {
     }
   }
 
-  // 🏙 City skyline (foreground layer 1)
-  ctx.fillStyle = "rgba(30, 41, 59, 0.5)";
-  for (let i = 0; i < canvas.width; i += 100) {
-    let offset = (Date.now() / 30) % canvas.width;
-    ctx.fillRect(i - offset, canvas.height - 100, 60, 100 - (i % 40));
+ function drawForeground() {
+  const t = Date.now();
+
+  // 🏙 Background skyline (slower parallax)
+  const offsetSky = (t / 60) % canvas.width;
+  ctx.fillStyle = "rgba(17, 24, 39, 0.3)";
+  for (let i = 0; i < canvas.width + 200; i += 80) {
+    const height = 60 + (i % 100);
+    ctx.fillRect(i - offsetSky, canvas.height - 140, 60, height);
   }
 
-  // 🌿 Moving grass (foreground layer 2)
-  ctx.fillStyle = "#10b981";
-  for (let i = 0; i < canvas.width; i += 40) {
-    let offset = (Date.now() / 20) % canvas.width;
-    ctx.beginPath();
-    ctx.arc(i - offset, canvas.height - 10, 20, Math.PI, 0);
-    ctx.fill();
-  }
+  // 🌿 Grassy hills with bezier curve (foreground)
+  const hillOffset = (t / 30) % canvas.width;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(-hillOffset, canvas.height - 50);
+  ctx.bezierCurveTo(
+    canvas.width * 0.25 - hillOffset, canvas.height - 100,
+    canvas.width * 0.75 - hillOffset, canvas.height,
+    canvas.width * 1.2 - hillOffset, canvas.height - 50
+  );
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.lineTo(0, canvas.height);
+  ctx.closePath();
+
+  const grassGradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+  grassGradient.addColorStop(0, "#4ade80");
+  grassGradient.addColorStop(1, "#16a34a");
+  ctx.fillStyle = grassGradient;
+  ctx.fill();
+  ctx.restore();
+}
+
 
   // 🐦 Bird
   const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
@@ -209,6 +228,8 @@ function draw() {
     drawPipe(pipe.x, 0, pipe.top);
     drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
   });
+    drawForeground();
+
 }
 
 
