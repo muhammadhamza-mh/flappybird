@@ -11,6 +11,10 @@ const finalScore = document.getElementById("finalScore");
 const birdImg = new Image();
 birdImg.src = "https://i.ibb.co/p6rtypTB/bird.png";
 
+const bgAudio = new Audio("https://cdn.pixabay.com/download/audio/2023/06/13/audio_d2529b13d5.mp3?filename=playful-run-146661.mp3");
+bgAudio.loop = true;
+bgAudio.volume = 0.2;
+
 let bird = {
   x: 100,
   y: 300,
@@ -32,6 +36,7 @@ let isGameRunning = false;
 let gameOver = false;
 let level = "Easy";
 let speed = 3;
+let lastPipeX = 0;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -49,16 +54,19 @@ function resetGame() {
   scoreDisplay.textContent = "Score: 0";
   level = "Easy";
   speed = 3;
+  lastPipeX = canvas.width;
   spawnPipe();
+  bgAudio.play();
 }
 
 function spawnPipe() {
   const top = Math.random() * (canvas.height / 2) + 50;
-  pipes.push({ x: canvas.width, top, bottom: top + pipeGap, scored: false });
+  pipes.push({ x: lastPipeX + 300, top, bottom: top + pipeGap, scored: false });
+  lastPipeX += 300;
 }
 
 function updateLevel() {
-  if (score >= 30) {
+  if (score >= 20) {
     level = "Hard";
     speed = 6;
     pipeGap = 140;
@@ -101,7 +109,7 @@ function update() {
 
   pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
 
-  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 250) {
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 300) {
     spawnPipe();
   }
 
@@ -143,7 +151,6 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw plane
   const angle = Math.min(Math.max(velocity * 0.05, -0.5), 0.5);
   ctx.save();
   ctx.translate(bird.x, bird.y);
@@ -151,7 +158,6 @@ function draw() {
   ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
   ctx.restore();
 
-  // Pipes
   pipes.forEach(pipe => {
     drawPipe(pipe.x, 0, pipe.top);
     drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
@@ -181,10 +187,16 @@ function endGame() {
   isGameRunning = false;
   finalScore.textContent = `Your Score: ${score}`;
   gameOverScreen.classList.remove("hidden");
+  bgAudio.pause();
+  bgAudio.currentTime = 0;
 }
 
 window.addEventListener("keydown", e => {
   if (["Space", "ArrowUp"].includes(e.code)) e.preventDefault();
+
+  if (gameOver && e.code === "Space") {
+    startGame();
+  }
 });
 
 document.addEventListener("keydown", e => {
