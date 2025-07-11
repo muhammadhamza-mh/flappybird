@@ -25,7 +25,7 @@ let bird = {
 
 let velocity = 0;
 const gravity = 0.9;
-const flapPower = -14;
+const flapPower = -12;
 
 let pipeGap = 180;
 const pipeWidth = 60;
@@ -91,9 +91,9 @@ function spawnPipe() {
 }
 
 function updateLevel() {
-  if (score >= 4) {
+  if (score >= 20) {
     level = "Hard";
-    speed = 6;
+    speed = 10;
     pipeGap = 140;
   } else if (score >= 2) {
     level = "Normal";
