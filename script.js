@@ -25,7 +25,7 @@ let bird = {
 
 let velocity = 0;
 const gravity = 0.4;              // ⬆ Faster falling
-const flapPower = -4;            // ⬆ Stronger flap
+const flapPower = -7.5;            // ⬆ Stronger flap
 
 let pipeGap = 180;
 const pipeWidth = 60;
