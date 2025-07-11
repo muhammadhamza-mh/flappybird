@@ -1,0 +1,197 @@
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const startScreen = document.getElementById("overlay");
+const gameOverScreen = document.getElementById("gameOverScreen");
+const startBtn = document.getElementById("startBtn");
+const restartBtn = document.getElementById("restartBtn");
+const scoreDisplay = document.getElementById("score");
+const finalScore = document.getElementById("finalScore");
+
+const birdImg = new Image();
+birdImg.src = "https://i.ibb.co/p6rtypTB/bird.png";
+
+let bird = {
+  x: 100,
+  y: 300,
+  radius: 20,
+  width: 50,
+  height: 40
+};
+
+let velocity = 0;
+const gravity = 0.5;
+const flapPower = -8;
+
+let pipeGap = 180;
+const pipeWidth = 60;
+let pipes = [];
+
+let score = 0;
+let isGameRunning = false;
+let gameOver = false;
+let level = "Easy";
+let speed = 3;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function resetGame() {
+  bird.y = canvas.height / 2;
+  velocity = 0;
+  pipes = [];
+  score = 0;
+  gameOver = false;
+  scoreDisplay.textContent = "Score: 0";
+  level = "Easy";
+  speed = 3;
+  spawnPipe();
+}
+
+function spawnPipe() {
+  const top = Math.random() * (canvas.height / 2) + 50;
+  pipes.push({ x: canvas.width, top, bottom: top + pipeGap, scored: false });
+}
+
+function updateLevel() {
+  if (score >= 30) {
+    level = "Hard";
+    speed = 6;
+    pipeGap = 140;
+  } else if (score >= 10) {
+    level = "Normal";
+    speed = 4.5;
+    pipeGap = 160;
+  } else {
+    level = "Easy";
+    speed = 3;
+    pipeGap = 180;
+  }
+}
+
+function update() {
+  if (!isGameRunning || gameOver) return;
+
+  velocity += gravity;
+  bird.y += velocity;
+
+  updateLevel();
+
+  pipes.forEach(pipe => {
+    pipe.x -= speed;
+
+    if (
+      bird.x + bird.radius > pipe.x &&
+      bird.x - bird.radius < pipe.x + pipeWidth &&
+      (bird.y - bird.radius < pipe.top || bird.y + bird.radius > pipe.bottom)
+    ) {
+      endGame();
+    }
+
+    if (!pipe.scored && pipe.x + pipeWidth < bird.x) {
+      pipe.scored = true;
+      score++;
+      scoreDisplay.textContent = `Score: ${score} | Level: ${level}`;
+    }
+  });
+
+  pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 250) {
+    spawnPipe();
+  }
+
+  if (bird.y + bird.radius > canvas.height || bird.y - bird.radius < 0) {
+    endGame();
+  }
+}
+
+function drawPipe(x, y, height) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x, y, pipeWidth, height, 10);
+  ctx.fillStyle = "#22c55e";
+  ctx.fill();
+  ctx.strokeStyle = "#ec4899";
+  ctx.lineWidth = 5;
+
+  for (let i = 0; i < height; i += 20) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + i);
+    ctx.lineTo(x + pipeWidth, y + i + 10);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + w, y, r);
+  this.closePath();
+};
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw plane
+  const angle = Math.min(Math.max(velocity * 0.05, -0.5), 0.5);
+  ctx.save();
+  ctx.translate(bird.x, bird.y);
+  ctx.rotate(angle);
+  ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+  ctx.restore();
+
+  // Pipes
+  pipes.forEach(pipe => {
+    drawPipe(pipe.x, 0, pipe.top);
+    drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
+  });
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function flap() {
+  if (!isGameRunning || gameOver) return;
+  velocity = flapPower;
+}
+
+function startGame() {
+  resetGame();
+  isGameRunning = true;
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+}
+
+function endGame() {
+  gameOver = true;
+  isGameRunning = false;
+  finalScore.textContent = `Your Score: ${score}`;
+  gameOverScreen.classList.remove("hidden");
+}
+
+window.addEventListener("keydown", e => {
+  if (["Space", "ArrowUp"].includes(e.code)) e.preventDefault();
+});
+
+document.addEventListener("keydown", e => {
+  if (["Space", "ArrowUp"].includes(e.code)) flap();
+});
+canvas.addEventListener("click", flap);
+startBtn.addEventListener("click", startGame);
+restartBtn.addEventListener("click", startGame);
+
+gameLoop();
