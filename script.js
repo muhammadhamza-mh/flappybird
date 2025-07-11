@@ -95,7 +95,7 @@ function updateLevel() {
     level = "Hard";
     speed = 10;
     pipeGap = 140;
-  } else if (score >= 2) {
+  } else if (score >= 10) {
     level = "Normal";
     speed = 4.5;
     pipeGap = 160;
