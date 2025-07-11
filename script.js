@@ -315,14 +315,21 @@ function endGame() {
   gameOverScreen.classList.remove("hidden");
 }
 
-
-window.addEventListener("keydown", e => {
+window.addEventListener("keydown", (e) => {
   if (["Space", "ArrowUp"].includes(e.code)) e.preventDefault();
 
-  if (gameOver && e.code === "Space") {
+  if (!isGameRunning && !gameOver && e.code === "Space") {
+    // Start from welcome screen
+    startGame();
+  } else if (gameOver && e.code === "Space") {
+    // Restart after game over
     startGame();
   }
 });
+document.addEventListener("keydown", (e) => {
+  if (["Space", "ArrowUp"].includes(e.code)) flap();
+});
+
 
 document.addEventListener("keydown", e => {
   if (["Space", "ArrowUp"].includes(e.code)) flap();
