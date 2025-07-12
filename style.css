@@ -188,3 +188,8 @@ input[type='range'] {
   vertical-align: middle;
   margin-left: 10px;
 }
+
+.ad-container {
+  margin: 20px auto;
+  text-align: center;
+}
