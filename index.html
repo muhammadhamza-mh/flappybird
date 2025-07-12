@@ -6,6 +6,10 @@
   <title>Flappy Bird | By Hamza</title>
   <link rel="icon" href="https://i.ibb.co/p6rtypTB/bird.png" />
   <link rel="stylesheet" href="style.css" />
+
+  <!-- ✅ Google AdSense Script (Load Once) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2682975719334843"
+    crossorigin="anonymous"></script>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
@@ -30,6 +34,17 @@
   <div id="gameOverScreen" class="hidden">
     <h2>Game Over</h2>
     <p id="finalScore">Your Score: 0 | High Score: 0</p>
+
+    <!-- ✅ AdSense Ad in Game Over Screen -->
+    <div class="ad-container">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2682975719334843"
+           data-ad-slot="1704352883"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
+
     <button id="restartBtn">Play Again</button>
   </div>
 
@@ -40,6 +55,17 @@
   <div class="controls">
     <button id="pauseBtn">Pause</button>
   </div>
+
+  <!-- ✅ AdSense Ad Activation Script at Bottom -->
+  <script>
+    window.addEventListener("load", () => {
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.warn("Adsense not loaded:", e);
+      }
+    });
+  </script>
 
   <script src="script.js"></script>
 </body>
