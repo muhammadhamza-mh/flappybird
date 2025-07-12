@@ -3,27 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flappy Bird | By Hamza</title>
+  <title>Flappy Plane</title>
+  <link rel="icon" href="https://i.ibb.co/p6rtypTB/bird.png" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" type="image/png" href="https://i.ibb.co/p6rtypTB/bird.png">
-
 </head>
-
 <body>
   <canvas id="gameCanvas"></canvas>
-  <div class="title">Flappy Bird | By Hamza</div>
-  <div class="score" id="score">Score: 0</div>
 
-  <div class="overlay" id="overlay">
-    <h1>Flappy Bird | By Hamza</h1>
-    <p>Tap or press Space/↑ to fly!</p>
-    <button class="btn" id="startBtn">Start Game</button>
+  <!-- Start Screen -->
+  <div id="overlay">
+    <h1>Flappy Plane</h1>
+    <button id="startBtn">Start Game</button>
   </div>
 
-  <div class="overlay hidden" id="gameOverScreen">
+  <!-- Pause Overlay -->
+  <div id="pauseOverlay" class="hidden">
+    <h2>Game Paused</h2>
+    <p>Press <strong>P</strong> or click Resume to continue.</p>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameOverScreen" class="hidden">
     <h2>Game Over</h2>
-    <p id="finalScore">Your Score: 0</p>
-    <button class="btn" id="restartBtn">Play Again</button>
+    <p id="finalScore">Your Score: 0 | High Score: 0</p>
+    <button id="restartBtn">Play Again</button>
+  </div>
+
+  <!-- Score Display -->
+  <div id="score">Score: 0 | Level: Easy | High: 0</div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button id="pauseBtn">Pause</button>
+    <label for="volumeSlider">
+      Volume
+      <input type="range" id="volumeSlider" min="0" max="100" value="60" />
+    </label>
   </div>
 
   <script src="script.js"></script>
