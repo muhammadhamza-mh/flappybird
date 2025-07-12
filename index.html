@@ -16,10 +16,14 @@
     <button id="startBtn">Start Game</button>
   </div>
 
-  <!-- Pause Overlay -->
+  <!-- Pause Screen -->
   <div id="pauseOverlay" class="hidden">
     <h2>Game Paused</h2>
     <p>Press <strong>P</strong> or click Resume to continue.</p>
+    <label for="volumeSlider">
+      Volume
+      <input type="range" id="volumeSlider" min="0" max="100" value="60" />
+    </label>
   </div>
 
   <!-- Game Over Screen -->
@@ -32,13 +36,9 @@
   <!-- Score Display -->
   <div id="score">Score: 0 | Level: Easy | High: 0</div>
 
-  <!-- Controls -->
+  <!-- Controls Top-Right -->
   <div class="controls">
     <button id="pauseBtn">Pause</button>
-    <label for="volumeSlider">
-      Volume
-      <input type="range" id="volumeSlider" min="0" max="100" value="60" />
-    </label>
   </div>
 
   <script src="script.js"></script>

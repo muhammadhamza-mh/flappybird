@@ -164,14 +164,24 @@ button:hover {
   font-weight: bold;
   z-index: 5;
 }
-
 .controls {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#pauseBtn {
+  padding: 8px 16px;
+  background-color: #2563eb;
   color: white;
-  font-size: 16px;
-  z-index: 5;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 input[type='range'] {

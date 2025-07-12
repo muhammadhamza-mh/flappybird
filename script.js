@@ -158,6 +158,31 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 };
 
 function draw() {
+  function drawForeground() {
+  const t = Date.now();
+  const hillOffset = (t / 30) % canvas.width;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(-hillOffset, canvas.height - 50);
+  ctx.bezierCurveTo(
+    canvas.width * 0.25 - hillOffset, canvas.height - 100,
+    canvas.width * 0.75 - hillOffset, canvas.height,
+    canvas.width * 1.2 - hillOffset, canvas.height - 50
+  );
+  ctx.lineTo(canvas.width, canvas.height);
+  ctx.lineTo(0, canvas.height);
+  ctx.closePath();
+
+  const grassGradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+  grassGradient.addColorStop(0, "#4ade80");
+  grassGradient.addColorStop(1, "#16a34a");
+  ctx.fillStyle = grassGradient;
+  ctx.fill();
+  ctx.restore();
+}
+drawForeground();
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
   bg.addColorStop(0, level === "Hard" ? "#0f172a" : level === "Normal" ? "#fdba74" : "#87ceeb");
