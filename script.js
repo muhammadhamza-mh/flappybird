@@ -158,27 +158,24 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 };
 
 function draw() {
+  // Dynamic background based on level
   function drawForeground() {
   const time = Date.now();
 
-  // Parallax hills
+  // Draw animated layered hills
   function drawHill(colorStart, colorEnd, yOffset, amplitude, speedFactor, alpha) {
     const offset = (time / speedFactor) % canvas.width;
-
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(-offset, canvas.height - yOffset);
-
     for (let i = -1; i <= 3; i++) {
       const x = i * canvas.width / 2;
       const cp1 = x + canvas.width / 4;
       const cp2 = x + canvas.width / 4 * 3;
       const y1 = canvas.height - yOffset - Math.sin((time + x) / 1000) * amplitude;
       const y2 = canvas.height - yOffset + Math.cos((time + x) / 1200) * amplitude;
-
       ctx.bezierCurveTo(cp1 - offset, y1, cp2 - offset, y2, x + canvas.width - offset, canvas.height - yOffset);
     }
-
     ctx.lineTo(canvas.width, canvas.height);
     ctx.lineTo(0, canvas.height);
     ctx.closePath();
@@ -193,7 +190,6 @@ function draw() {
     ctx.restore();
   }
 
-  // Bottom hills (layered)
   drawHill("#4ade80", "#16a34a", 110, 30, 50, 0.4);
   drawHill("#22c55e", "#15803d", 70, 40, 30, 0.6);
   drawHill("#16a34a", "#14532d", 40, 50, 20, 1);
@@ -211,47 +207,69 @@ function draw() {
   }
   ctx.restore();
 
-  // Elegant clouds (foreground top)
-  const cloudOffset = (time / 25) % (canvas.width + 400);
-
-  for (let i = 0; i < 4; i++) {
-    const x = ((i * 400) - cloudOffset) + 100;
-    const y = 80 + Math.sin(i + time / 1000) * 5;
+  // Foreground clouds
+  const cloudCount = 8;
+  for (let i = 0; i < cloudCount; i++) {
+    const x = ((i * 300) - (time / (30 + i * 2))) % (canvas.width + 400) - 100;
+    const y = 60 + (i % 2 === 0 ? 0 : 20);
+    const size = 20 + (i % 3) * 10;
 
     ctx.save();
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = "white";
+    ctx.globalAlpha = 0.4 + (i % 3) * 0.2;
+    ctx.fillStyle = "#fff";
 
     ctx.beginPath();
-    ctx.arc(x, y, 30, 0, Math.PI * 2);
-    ctx.arc(x + 30, y + 10, 25, 0, Math.PI * 2);
-    ctx.arc(x - 30, y + 10, 25, 0, Math.PI * 2);
-    ctx.arc(x, y + 15, 28, 0, Math.PI * 2);
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.arc(x + size, y + 10, size * 0.8, 0, Math.PI * 2);
+    ctx.arc(x - size, y + 10, size * 0.7, 0, Math.PI * 2);
+    ctx.arc(x, y + 12, size * 0.9, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.restore();
   }
 }
 
+  const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
 
+  if (level === "Easy") {
+    bg.addColorStop(0, "#a0e9ff");  // bright blue
+    bg.addColorStop(1, "#ffffff");
+  } else if (level === "Normal") {
+    bg.addColorStop(0, "#f97316");  // sunset orange
+    bg.addColorStop(1, "#fcd34d");
+  } else {
+    bg.addColorStop(0, "#0f172a");  // deep navy
+    bg.addColorStop(1, "#1e293b");
+  }
 
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-bg.addColorStop(0, level === "Hard" ? "#0f172a" : level === "Normal" ? "#fdba74" : "#87ceeb");
-bg.addColorStop(1, level === "Hard" ? "#1e293b" : level === "Normal" ? "#fef3c7" : "#ffffff");
-ctx.fillStyle = bg;
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
-ctx.save();
-ctx.translate(bird.x, bird.y);
-ctx.rotate(angle);
-ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
-ctx.restore();
-pipes.forEach(pipe => {
-  drawPipe(pipe.x, 0, pipe.top);
-  drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
-});
-drawForeground();
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Stars for hard mode
+  if (level === "Hard") {
+    for (let i = 0; i < 80; i++) {
+      const x = (i * 20 + (Date.now() / 10)) % canvas.width;
+      const y = (i * 15) % (canvas.height / 2);
+      ctx.fillStyle = "white";
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+  }
+
+  // Draw bird
+  const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
+  ctx.save();
+  ctx.translate(bird.x, bird.y);
+  ctx.rotate(angle);
+  ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+  ctx.restore();
+
+  // Draw pipes
+  pipes.forEach(pipe => {
+    drawPipe(pipe.x, 0, pipe.top);
+    drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
+  });
+
+  drawForeground(); // 👈 Enhanced clouds and terrain
 }
 
 function gameLoop() {
