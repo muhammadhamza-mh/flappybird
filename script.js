@@ -160,11 +160,11 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 function draw() {
   function drawForeground() {
   const time = Date.now();
-  const waveOffset = (time / 40) % canvas.width;
 
-  // Layered hills
+  // Parallax hills
   function drawHill(colorStart, colorEnd, yOffset, amplitude, speedFactor, alpha) {
     const offset = (time / speedFactor) % canvas.width;
+
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(-offset, canvas.height - yOffset);
@@ -193,26 +193,46 @@ function draw() {
     ctx.restore();
   }
 
-  // Back hill
-  drawHill("#4ade80", "#16a34a", 100, 30, 50, 0.5);
-  // Mid hill
-  drawHill("#22c55e", "#15803d", 70, 40, 30, 0.7);
-  // Front hill
+  // Bottom hills (layered)
+  drawHill("#4ade80", "#16a34a", 110, 30, 50, 0.4);
+  drawHill("#22c55e", "#15803d", 70, 40, 30, 0.6);
   drawHill("#16a34a", "#14532d", 40, 50, 20, 1);
 
-  // Moving grass blades
+  // Grass blades
   ctx.save();
   ctx.strokeStyle = "#065f46";
   ctx.lineWidth = 1.5;
-  for (let i = 0; i < canvas.width; i += 10) {
+  for (let i = 0; i < canvas.width; i += 12) {
     const sway = Math.sin((time + i * 10) / 300) * 3;
     ctx.beginPath();
-    ctx.moveTo(i, canvas.height - 10);
-    ctx.lineTo(i + sway, canvas.height - 25);
+    ctx.moveTo(i, canvas.height - 12);
+    ctx.lineTo(i + sway, canvas.height - 24);
     ctx.stroke();
   }
   ctx.restore();
+
+  // Elegant clouds (foreground top)
+  const cloudOffset = (time / 25) % (canvas.width + 400);
+
+  for (let i = 0; i < 4; i++) {
+    const x = ((i * 400) - cloudOffset) + 100;
+    const y = 80 + Math.sin(i + time / 1000) * 5;
+
+    ctx.save();
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = "white";
+
+    ctx.beginPath();
+    ctx.arc(x, y, 30, 0, Math.PI * 2);
+    ctx.arc(x + 30, y + 10, 25, 0, Math.PI * 2);
+    ctx.arc(x - 30, y + 10, 25, 0, Math.PI * 2);
+    ctx.arc(x, y + 15, 28, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
 }
+
 
 
 ctx.clearRect(0, 0, canvas.width, canvas.height);
