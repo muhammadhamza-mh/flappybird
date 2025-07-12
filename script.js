@@ -159,46 +159,79 @@ CanvasRenderingContext2D.prototype.roundRect ||= function (x, y, w, h, r) {
 
 function draw() {
   function drawForeground() {
-  const t = Date.now();
-  const hillOffset = (t / 30) % canvas.width;
+  const time = Date.now();
+  const waveOffset = (time / 40) % canvas.width;
 
+  // Layered hills
+  function drawHill(colorStart, colorEnd, yOffset, amplitude, speedFactor, alpha) {
+    const offset = (time / speedFactor) % canvas.width;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-offset, canvas.height - yOffset);
+
+    for (let i = -1; i <= 3; i++) {
+      const x = i * canvas.width / 2;
+      const cp1 = x + canvas.width / 4;
+      const cp2 = x + canvas.width / 4 * 3;
+      const y1 = canvas.height - yOffset - Math.sin((time + x) / 1000) * amplitude;
+      const y2 = canvas.height - yOffset + Math.cos((time + x) / 1200) * amplitude;
+
+      ctx.bezierCurveTo(cp1 - offset, y1, cp2 - offset, y2, x + canvas.width - offset, canvas.height - yOffset);
+    }
+
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.closePath();
+
+    const gradient = ctx.createLinearGradient(0, canvas.height - yOffset - 100, 0, canvas.height);
+    gradient.addColorStop(0, colorStart);
+    gradient.addColorStop(1, colorEnd);
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // Back hill
+  drawHill("#4ade80", "#16a34a", 100, 30, 50, 0.5);
+  // Mid hill
+  drawHill("#22c55e", "#15803d", 70, 40, 30, 0.7);
+  // Front hill
+  drawHill("#16a34a", "#14532d", 40, 50, 20, 1);
+
+  // Moving grass blades
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(-hillOffset, canvas.height - 50);
-  ctx.bezierCurveTo(
-    canvas.width * 0.25 - hillOffset, canvas.height - 100,
-    canvas.width * 0.75 - hillOffset, canvas.height,
-    canvas.width * 1.2 - hillOffset, canvas.height - 50
-  );
-  ctx.lineTo(canvas.width, canvas.height);
-  ctx.lineTo(0, canvas.height);
-  ctx.closePath();
-
-  const grassGradient = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
-  grassGradient.addColorStop(0, "#4ade80");
-  grassGradient.addColorStop(1, "#16a34a");
-  ctx.fillStyle = grassGradient;
-  ctx.fill();
+  ctx.strokeStyle = "#065f46";
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < canvas.width; i += 10) {
+    const sway = Math.sin((time + i * 10) / 300) * 3;
+    ctx.beginPath();
+    ctx.moveTo(i, canvas.height - 10);
+    ctx.lineTo(i + sway, canvas.height - 25);
+    ctx.stroke();
+  }
   ctx.restore();
 }
-drawForeground();
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  bg.addColorStop(0, level === "Hard" ? "#0f172a" : level === "Normal" ? "#fdba74" : "#87ceeb");
-  bg.addColorStop(1, level === "Hard" ? "#1e293b" : level === "Normal" ? "#fef3c7" : "#ffffff");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
-  ctx.save();
-  ctx.translate(bird.x, bird.y);
-  ctx.rotate(angle);
-  ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
-  ctx.restore();
-  pipes.forEach(pipe => {
-    drawPipe(pipe.x, 0, pipe.top);
-    drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
-  });
+
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+bg.addColorStop(0, level === "Hard" ? "#0f172a" : level === "Normal" ? "#fdba74" : "#87ceeb");
+bg.addColorStop(1, level === "Hard" ? "#1e293b" : level === "Normal" ? "#fef3c7" : "#ffffff");
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+const angle = Math.min(Math.max(velocity * 0.05, -0.4), 0.4);
+ctx.save();
+ctx.translate(bird.x, bird.y);
+ctx.rotate(angle);
+ctx.drawImage(birdImg, -bird.width / 2, -bird.height / 2, bird.width, bird.height);
+ctx.restore();
+pipes.forEach(pipe => {
+  drawPipe(pipe.x, 0, pipe.top);
+  drawPipe(pipe.x, pipe.bottom, canvas.height - pipe.bottom);
+});
+drawForeground();
 }
 
 function gameLoop() {
