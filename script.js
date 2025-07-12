@@ -300,17 +300,33 @@ function startGame() {
 function endGame() {
   gameOver = true;
   isGameRunning = false;
+
   if (score > highScore) {
     highScore = score;
     localStorage.setItem("highScore", highScore);
   }
-  gameOverSound.currentTime = 0;
-  gameOverSound.play();
-  finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
-  gameOverScreen.classList.remove("hidden");
+
   bgAudio.pause();
   bgAudio.currentTime = 0;
+
+  gameOverSound.currentTime = 0;
+  gameOverSound.play();
+
+  finalScore.textContent = `Your Score: ${score} | High Score: ${highScore}`;
+  gameOverScreen.classList.remove("hidden");
+
+  // ✅ Reload Google AdSense Ad on Game Over
+  const adContainer = document.querySelector(".ad-container ins.adsbygoogle");
+  if (adContainer) {
+    adContainer.innerHTML = ""; // Clear previous ad content if any
+    try {
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.warn("AdSense push error:", e);
+    }
+  }
 }
+
 
 // 🔁 PAUSE FUNCTIONALITY
 function togglePause() {
